@@ -1,6 +1,5 @@
 package com.hambugi.batchServer.controller;
 
-import com.hambugi.batchServer.entity.CulturalEvent;
 import com.hambugi.batchServer.service.CulturalEventService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,5 +15,11 @@ public class CulturalEventController {
 
     public CulturalEventController(CulturalEventService culturalEventService) {
         this.culturalEventService = culturalEventService;
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<?> test() {
+        culturalEventService.fetchAllEventDataParallel();
+        return ResponseEntity.ok().build();
     }
 }

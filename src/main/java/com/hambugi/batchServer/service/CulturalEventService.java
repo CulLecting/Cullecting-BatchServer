@@ -12,6 +12,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -27,6 +29,8 @@ public class CulturalEventService {
 
     private final String BASE_URL = "http://openapi.seoul.go.kr:8088/";
     private RestTemplate restTemplate;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+
 
     public CulturalEventService(CulturalEventRepository culturalEventRepository, RestTemplate restTemplate, EmailSenderService emailSenderService) {
         this.culturalEventRepository = culturalEventRepository;
@@ -74,7 +78,6 @@ public class CulturalEventService {
             System.out.println("✅ 병렬 배치 완료: " + filtered.size() + "건 저장");
 
         } catch (Exception e) {
-            //sendDiscordAlert("🚨 배치 실패: " + e.getMessage());
             System.out.println("배치 실패: " + e.getMessage());
             emailSenderService.send("🚨 배치 실패", e.getMessage());
         }
@@ -87,7 +90,6 @@ public class CulturalEventService {
             JSONObject root = new JSONObject(response.getBody());
             return root.getJSONObject("culturalEventInfo").getInt("list_total_count");
         } catch (Exception e) {
-            //sendDiscordAlert("🚨 totalCount 조회 실패: " + e.getMessage());
             System.out.println("totalCount 조회 실패: " + e.getMessage());
             emailSenderService.send("🚨 totalCount 조회 실패", e.getMessage());
             return 0;
@@ -109,7 +111,6 @@ public class CulturalEventService {
                 results.add(parseRawEvent(obj));
             }
         } catch (Exception e) {
-            //sendDiscordAlert("" + e.getMessage());
             System.out.println("병렬 처리 중 에러: " + e.getMessage());
             emailSenderService.send("🚨 병렬 처리 중 에러", e.getMessage());
         }
@@ -154,14 +155,19 @@ public class CulturalEventService {
                 .orgLink(raw.getOrgLink())
                 .mainImg(raw.getMainImg())
                 .themeCode(raw.getThemeCode())
-                .startDate(raw.getStartDate())
-                .endDate(raw.getEndDate())
+                .startDate(parseToLocalDate(raw.getStartDate()))
+                .endDate(parseToLocalDate(raw.getEndDate()))
                 .date(raw.getDate())
                 .lot(raw.getLot())
                 .lat(raw.getLat())
                 .hmpgAddr(raw.getHmpgAddr())
                 .isFree("무료".equals(raw.getIsFree()))
                 .build();
+    }
+
+    private LocalDate parseToLocalDate(String datetime) {
+        if (datetime == null || datetime.isBlank()) return null;
+        return LocalDate.parse(datetime.trim(), FORMATTER);
     }
 
 }

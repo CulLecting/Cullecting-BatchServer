@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,8 +29,8 @@ public class CulturalEvent {
     @Column(length = 1000)
     private String mainImg; //프로그램 메인 이미지
     private String themeCode; //테마분류
-    private String startDate; //시작날짜
-    private String endDate; //끝나는날짜
+    private LocalDate startDate; //시작날짜
+    private LocalDate endDate; //끝나는날짜
     private String date; //기간
     private String lot; //위도
     private String lat; //경도
